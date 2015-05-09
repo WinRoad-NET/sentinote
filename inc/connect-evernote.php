@@ -112,6 +112,7 @@ function rksnwp_sync_evernote() {
 				'longitude'			=> $note->attributes->longitude,
 				'altitude'			=> $note->attributes->altitude,
 				'author'			=> $note->attributes->author,
+				'sourceURL'         => $note->attributes->sourceURL,
 				'tag_names'			=> array(),
 				'action'			=> 'none',
 				'content'			=> null,

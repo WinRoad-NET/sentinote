@@ -237,6 +237,10 @@ function rksnwp_post_add_meta ( $post, $extra ) {
 	update_post_meta( $post['ID'], 'en_guid', $extra['en_guid'] ); 
 	// Add modified date for sync purposes
 	update_post_meta( $post['ID'], 'en_modified', $extra['en_modified'] ); 
+	// Add sourceURL for copyright
+	if(!empty($extra['en_sourceURL'])) {
+		update_post_meta( $post['ID'], 'en_sourceURL', $extra['en_sourceURL'] );
+	}
 }
 add_action('sentinote_after_post_edit', 'rksnwp_post_add_meta', 10, 2);
 
