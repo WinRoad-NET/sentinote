@@ -320,7 +320,8 @@ add_filter( 'sentinote_process_en_note_data', 'rksnwp_en_remove_wrapper' );
 function rksnwp_en_fix_chars ( $theNote ){
 
 	$content = $theNote['content'];
-	$content = rksnwp_convert_smart_quotes($content); 
+	// For content with GBK or UTF-8 encoding, str_replace may break Chinese character.
+	//$content = rksnwp_convert_smart_quotes($content); 
 	$content = str_replace('&quot;','"',$content);
 	$theNote['content'] = $content;
 	
