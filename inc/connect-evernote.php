@@ -174,9 +174,9 @@ function rksnwp_evernote_get_full_note( $theNote ) {
 		$theNote['content']		= $note->content;
 		$theNote['tag_names']	= $theNote['note_store']->getNoteTagNames($theNote['guid']);
 	}
-	
+	// Adams still need it to get the resource data.
 	// Unset 'Note Store' to save overhead
-	unset($theNote['note_store']);
+	//unset($theNote['note_store']);
     return $theNote;
 }
 add_filter( 'sentinote_process_en_note_data', 'rksnwp_evernote_get_full_note' );
@@ -235,7 +235,14 @@ function rksnwp_en_process_resources ( $theNote ) {
 	if( is_array($theNote['resources']) )
 	foreach( $theNote['resources'] as $resource ) {
 		
-		$file_suffix = apply_filters('sentinote_post_upload_filename', "/" . $year . "/" . $month . "/" . $resource->attributes->fileName);
+		//Adams: avoid resource files have same name.
+		if (($pos = strrpos($resource->attributes->fileName, ".")) === FALSE)
+			$file_suffix = apply_filters('sentinote_post_upload_filename', "/" . $year . "/" . $month . "/" . $resource->guid);
+		else {
+			$extension = substr($resource->attributes->fileName, $pos);
+			$file_suffix = apply_filters('sentinote_post_upload_filename', "/" . $year . "/" . $month . "/" . $resource->guid . $extension);
+		}		
+		//$file_suffix = apply_filters('sentinote_post_upload_filename', "/" . $year . "/" . $month . "/" . $resource->attributes->fileName);
 		$filename = $basedir . $file_suffix;
 		$theurl = $baseurl . $file_suffix;
 		
@@ -244,8 +251,15 @@ function rksnwp_en_process_resources ( $theNote ) {
 		// print "Does it exist? " . file_exists($filename) . "\n\n";
 				
 		if(!file_exists($filename)) {
-			// Upload the file
-			file_put_contents($filename, $resource->data->body,LOCK_EX);
+			//Adams: if data is empty, reload the resource.
+			if(empty($resource->data->body)) {
+				$resData = $theNote['note_store']->getResourceData($resource->guid);
+				file_put_contents($filename, $resData, LOCK_EX);
+			}
+			else {
+				// Upload the file
+				file_put_contents($filename, $resource->data->body,LOCK_EX);
+			}
 			// Attach the file to the Wordpress database
 		  	$wp_filetype = wp_check_filetype(basename($filename), null );
 
