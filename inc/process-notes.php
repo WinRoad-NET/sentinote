@@ -68,20 +68,25 @@ function rksnwp_prepare_post( $note ) {
 		$post['post_content'] = str_replace('<p />','',$post['post_content']);
 		$post['post_content'] = str_replace('<p></p>','',$post['post_content']);
 		
-		//print_r($post);
 		switch ( $note['action'] ){
 			case 'update':
-					wp_update_post( $post );
+					if(wp_update_post( $post ) == 0) {
+						print "Failed to update post " . $post['post_title'] . "\n";
+					}
 				break;
 			case 'new':
 					unset($post['ID']);
 					$post['ID'] = wp_insert_post( $post );
+					if($post['ID'] == 0) {
+						print "Failed to insert post " . $post['post_title'] . "\n";
+					}
 				break;
 		}
 
 		$post_extra = apply_filters('sentinote_process_wp_post_extra_data', array(
 		  'en_guid'		   => $note['guid'],
 		  'en_modified'    => $note['updated'],
+		  'en_sourceURL'   => $note['sourceURL'],
 		  'files'   	   => $note['resource_path'],
 		  'filenames'  	   => $note['resource_url']		
 		));
@@ -137,8 +142,7 @@ function rksnwp_post_category( $post, $tags ){
 			}
 		}
 	}
-	if (count($postCasts) > 0)
-  	$post['post_category'] = $postCats;
+	$post['post_category'] = $postCats;
 	return $post;
 }
 add_action('sentinote_process_wp_post_data', 'rksnwp_post_category', 10, 2);
@@ -237,7 +241,7 @@ function rksnwp_post_add_meta ( $post, $extra ) {
 	update_post_meta( $post['ID'], 'en_guid', $extra['en_guid'] ); 
 	// Add modified date for sync purposes
 	update_post_meta( $post['ID'], 'en_modified', $extra['en_modified'] ); 
-	// Add sourceURL for copyright
+	// Adams: Add sourceURL for copyright
 	if(!empty($extra['en_sourceURL'])) {
 		update_post_meta( $post['ID'], 'en_sourceURL', $extra['en_sourceURL'] );
 	}
